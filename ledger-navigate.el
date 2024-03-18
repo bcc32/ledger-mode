@@ -42,7 +42,7 @@
   "Return t if at the beginning line of an xact or directive.
 
 Assumes point is at the beginning of a line."
-  (not (looking-at "[ \t]\\|\\(^$\\)")))
+  (not (looking-at "[ \t;]\\|\\(^$\\)")))
 
 (defun ledger-navigate-next-xact-or-directive ()
   "Move to the beginning of the next xact or directive."
@@ -64,7 +64,9 @@ Assumes point is at the beginning of a line."
     (when (equal context 'acct-transaction)
       (ledger-navigate-beginning-of-xact))
     (beginning-of-line)
-    (re-search-backward "^[[:graph:]]" nil t)))
+    (while
+        (and (re-search-backward "^[[:graph:]]" nil t)
+             (looking-at ";")))))
 
 (defun ledger-navigate-beginning-of-xact ()
   "Move point to the beginning of the current xact."
