@@ -455,7 +455,7 @@ called in the ledger buffer for which the report is being run."
 (defun ledger-report--compute-extra-args (report-cmd)
   "Compute extra args to add to REPORT-CMD."
   `(,@(when (ledger-report--cmd-needs-links-p report-cmd)
-        '("--prepend-format=%(filename):%(beg_line):"))
+        '("--prepend-format=%(filename):%(beg_line):%A;"))
     ,@(when ledger-report-auto-width
         `("--columns" ,(format "%d" (window-max-chars-per-line))))
     ,@(when ledger-report-use-native-highlighting
@@ -495,9 +495,10 @@ Optionally EDIT the command."
 
 (defun ledger-report--add-links ()
   "Replace file and line annotations with buttons."
-  (while (re-search-forward "^\\(\\(?:/\\|[a-zA-Z]:[\\/]\\)[^:]+\\)?:\\([0-9]+\\)?:" nil t)
+  (while (re-search-forward "^\\(\\(?:/\\|[a-zA-Z]:[\\/]\\)[^:]+\\)?:\\([0-9]+\\)?:\\([^;]+\\);" nil t)
     (let ((file (match-string 1))
-          (line (string-to-number (match-string 2))))
+          (line (string-to-number (match-string 2)))
+          (account (match-string 3)))
       (delete-region (match-beginning 0) (match-end 0))
       (when (and file line)
         (add-text-properties (line-beginning-position) (line-end-position)
@@ -509,6 +510,8 @@ Optionally EDIT the command."
         ;; Appending the face preserves Ledger's native highlighting
         (font-lock-append-text-property (line-beginning-position) (line-end-position)
                                         'face 'ledger-font-report-clickable-face)
+        (put-text-property (line-beginning-position) (line-end-position)
+                           'ledger-report-account account)
         (end-of-line)))))
 
 (defun ledger-report--compute-header-line (cmd)
