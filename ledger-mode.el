@@ -89,8 +89,11 @@
 
 (defun ledger-read-account-with-prompt (prompt)
   "Read an account from the minibuffer with PROMPT."
-  (let* ((context (ledger-context-at-point))
-         (account (ledger-context-field-value context 'account)))
+  (let ((account (or (ignore-errors
+                       (with-current-buffer ledger-report-buffer-name
+                         (debug)
+                         (get-text-property (point) 'ledger-report-account)))
+                     (ledger-context-field-value (ledger-context-at-point) 'account))))
     (ledger-completing-read-with-default prompt
                                          (when account
                                            (regexp-quote account))
