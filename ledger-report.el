@@ -512,7 +512,10 @@ Optionally EDIT the command."
         (end-of-line)))))
 
 (defun ledger-report--compute-header-line (cmd)
-  "Call `ledger-report-header-line-fn' with `ledger-report-cmd' bound to CMD."
+  "Compute the header line for the current report.
+
+This calls `ledger-report-header-line-fn' with variable
+`ledger-report-cmd' bound to CMD."
   (let ((ledger-report-cmd cmd))
     (funcall ledger-report-header-line-fn)))
 

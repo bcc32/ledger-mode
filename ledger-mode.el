@@ -403,7 +403,7 @@ With prefix ARG, decrement by that many instead."
   "Keymap for `ledger-mode'.")
 
 (easy-menu-define ledger-mode-menu ledger-mode-map
-  "Ledger menu"
+  "Ledger menu."
   '("Ledger"
     ["Narrow to REGEX" ledger-occur]
     ["Show all transactions" ledger-occur-mode ledger-occur-mode]

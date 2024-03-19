@@ -51,7 +51,7 @@
   "Target amount for this reconciliation process.")
 
 (defgroup ledger-reconcile nil
-  "Options for Ledger-mode reconciliation"
+  "Options for Ledger-mode reconciliation."
   :group 'ledger)
 
 (define-obsolete-variable-alias
@@ -384,8 +384,11 @@ When called interactively, prompt for DATE, then XACT."
 
 (defun ledger-reconcile-finish ()
   "Mark all pending posting or transactions as cleared.
-Depends on ledger-clear-whole-transactions, save the buffers and
-exit reconcile mode if `ledger-reconcile-finish-force-quit'"
+
+Marking behavior depends on `ledger-clear-whole-transactions'.
+
+Save the buffers, and exit reconcile mode if
+`ledger-reconcile-finish-force-quit' is non-nil."
   (interactive)
   (save-excursion
     (goto-char (point-min))
@@ -664,7 +667,7 @@ reconciliation, otherwise prompt for TARGET."
   "Keymap for `ledger-reconcile-mode'.")
 
 (easy-menu-define ledger-reconcile-mode-menu ledger-reconcile-mode-map
-  "Ledger reconcile menu"
+  "Ledger reconcile menu."
   `("Reconcile"
     ["Save" ledger-reconcile-save]
     ["Refresh" ledger-reconcile-refresh]

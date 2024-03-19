@@ -37,7 +37,7 @@
 ;;; Code:
 
 (defgroup ledger-post nil
-  "Options for controlling how Ledger-mode deals with postings and completion"
+  "Options for controlling how Ledger-mode deals with postings and completion."
   :group 'ledger)
 
 (defcustom ledger-post-account-alignment-column 4

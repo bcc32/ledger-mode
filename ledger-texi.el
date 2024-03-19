@@ -26,7 +26,7 @@
 (defvar ledger-binary-path)
 
 (defgroup ledger-texi nil
-  "Options for working on Ledger texi documentation"
+  "Options for working on Ledger texi documentation."
   :group 'ledger)
 
 (defcustom ledger-texi-sample-doc-path "~/ledger/doc/sample.dat"
