@@ -58,7 +58,8 @@ always located at the beginning of buffer."
   (declare (indent 1) (debug t))
   `(let* ((temp-file (make-temp-file "ledger-tests-"))
           (ledger-buffer (find-file-noselect temp-file))
-          (ledger-init-file-name nil))
+          (ledger-init-file-name nil)
+          (ledger-mode-should-check-version nil))
      (unwind-protect
          (with-current-buffer ledger-buffer
            (switch-to-buffer ledger-buffer) ; this selects window
@@ -97,7 +98,8 @@ The two arguments START and END are character positions."
 
 (defun ledger-test-fontify-string (str)
   "Fontify `STR' in ledger mode."
-  (let (ledger-init-file-name)
+  (let (ledger-init-file-name
+        ledger-mode-should-check-version)
     (with-temp-buffer
       (ledger-mode)
       (insert str)

@@ -612,7 +612,8 @@ https://groups.google.com/d/msg/ledger-cli/9zyWZW_fJmk/G56uVsqv0FAJ"
            "Equity:Opening Balances"  ledger-font-posting-account-face)))
 
     (with-temp-buffer
-      (let (ledger-init-file-name)
+      (let (ledger-init-file-name
+            ledger-mode-should-check-version)
         (ledger-mode)
         (unwind-protect
             (progn
@@ -2619,7 +2620,7 @@ payeee Charity
             "Expenses:Food"  ledger-font-posting-account-face
             "7 EUR"          ledger-font-posting-amount-face)))
     (with-temp-buffer
-      (let (ledger-init-file-name)
+      (let (ledger-init-file-name ledger-mode-should-check-version)
         (ledger-mode)
         (insert pre-str str post-str)
         (font-lock-fontify-region beg end nil)

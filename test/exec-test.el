@@ -36,7 +36,8 @@ http://bugs.ledger-cli.org/show_bug.cgi?id=254"
 
   (ledger-tests-with-temp-file
       ""
-    (ledger-check-version)
+    (let ((ledger-mode-should-check-version t))
+      (ledger-check-version))
     (should
      (eq t ledger-works))))
 
