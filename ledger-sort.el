@@ -34,7 +34,9 @@
 It will be called with no arguments, with point at the beginning
 of the xact, and should return a string or number."
   :group 'ledger
-  :type 'function)
+  :type '(choice (const :tag "Sort by actual date" ledger-sort-default-key-function)
+                 (const :tag "Sort by effective date" ledger-sort-effective-date-key-function)
+                 function))
 
 (defun ledger-sort-find-start ()
   "Find the beginning of a sort region."
@@ -73,6 +75,12 @@ of the xact, and should return a string or number."
   (float-time
    (ledger-parse-iso-date
     (buffer-substring-no-properties (point) (+ 10 (point))))))
+
+(defun ledger-sort-effective-date-key-function ()
+  "Return the effective date of the xact beginning at point."
+  (when (looking-at ledger-xact-line-regexp)
+    (or (match-string ledger-regex-xact-line-group-effective-date)
+        (match-string ledger-regex-xact-line-group-actual-date))))
 
 (defun ledger-sort-region (beg end)
   "Sort the region from BEG to END.
