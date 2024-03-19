@@ -28,7 +28,7 @@
 (require 'outline)
 
 (defgroup ledger-test nil
-  "Definitions for the Ledger testing framework"
+  "Definitions for the Ledger testing framework."
   :group 'ledger)
 
 (defcustom ledger-source-directory "~/ledger/"
@@ -69,6 +69,7 @@
           (forward-line 1))))))
 
 (defun ledger-test-org-narrow-to-entry ()
+  "Narrow the buffer to the current org heading, not including its children."
   (outline-back-to-heading)
   (narrow-to-region (point) (progn (outline-next-heading) (point)))
   (goto-char (point-min)))
