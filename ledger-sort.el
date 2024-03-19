@@ -29,6 +29,13 @@
 (require 'ledger-navigate)
 (require 'ledger-xact)
 
+(defcustom ledger-sort-key-function #'ledger-sort-default-key-function
+  "A function to get the sort key of an xact.
+It will be called with no arguments, with point at the beginning
+of the xact, and should return a string or number."
+  :group 'ledger
+  :type 'function)
+
 (defun ledger-sort-find-start ()
   "Find the beginning of a sort region."
   (when (re-search-forward ";.*Ledger-mode:.*Start sort" nil t)
@@ -59,7 +66,7 @@
   (beginning-of-line)
   (insert "\n; Ledger-mode: End sort\n\n"))
 
-(defun ledger-sort-startkey ()
+(defun ledger-sort-default-key-function ()
   "Return a numeric sort key based on the date of the xact beginning at point."
   ;; Can use `time-convert' to return an integer instead of a floating-point
   ;; number, starting in Emacs 27.
@@ -68,7 +75,11 @@
     (buffer-substring-no-properties (point) (+ 10 (point))))))
 
 (defun ledger-sort-region (beg end)
-  "Sort the region from BEG to END in chronological order."
+  "Sort the region from BEG to END.
+
+By default, xacts are sorted in chronological order, but a
+different sort key can be specified by customizing
+`ledger-sort-key-function'."
   (interactive "r") ;; load beg and end from point and mark
   ;; automagically
   (let* ((bounds (ledger-navigate-find-xact-extents (point)))
@@ -97,14 +108,18 @@
            nil
            #'ledger-navigate-next-xact
            #'ledger-navigate-end-of-xact
-           #'ledger-sort-startkey))))
+           ledger-sort-key-function))))
 
     (goto-char (point-min))
     (search-forward target-xact)
     (goto-char (+ (match-beginning 0) point-delta))))
 
 (defun ledger-sort-buffer ()
-  "Sort the entire buffer."
+  "Sort the entire buffer.
+
+By default, xacts are sorted in chronological order, but a
+different sort key can be specified by customizing
+`ledger-sort-key-function'."
   (interactive)
   (let (sort-start sort-end)
     (save-excursion
