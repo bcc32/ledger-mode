@@ -39,6 +39,11 @@
       (file-name-directory load-file-name)))
     (buffer-string)))
 
+(defun ledger-tests-reset-custom-value (variable)
+  "Reset custom option VARIABLE to its standard value."
+  (let ((value (eval (car (get variable 'standard-value)) t)) ;`custom--standard-value'
+        (setter (or (get variable 'custom-set) #'set-default)))
+    (funcall setter variable value)))
 
 (defun ledger-tests-reset-custom-values (group)
   "Reset custom variables from GROUP to standard value."
@@ -47,7 +52,7 @@
       (cond ((eq (cadr member) 'custom-group)
              (ledger-tests-reset-custom-values (car member)))
             ((eq (cadr member) 'custom-variable)
-             (custom-reevaluate-setting (car member)))))))
+             (ledger-tests-reset-custom-value (car member)))))))
 
 
 (defmacro ledger-tests-with-temp-file (contents &rest body)
