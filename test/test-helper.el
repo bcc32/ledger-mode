@@ -47,7 +47,8 @@
       (cond ((eq (cadr member) 'custom-group)
              (ledger-tests-reset-custom-values (car member)))
             ((eq (cadr member) 'custom-variable)
-             (custom-reevaluate-setting (car member)))))))
+             (setopt--set (car member)
+                          (custom--standard-value (car member))))))))
 
 
 (defmacro ledger-tests-with-temp-file (contents &rest body)
