@@ -37,6 +37,10 @@ http://bugs.ledger-cli.org/show_bug.cgi?id=1107"
   (ledger-tests-with-temp-file
       demo-ledger
     (ledger-reconcile "Assets:Checking" '(0 "$")) ; this moves to *reconcile* buffer
+    (should
+     (equal (ledger-tests-message-output-so-far)
+            (concat "Pending balance: $ 1710.0\n"
+                    "Cleared and Pending balance: $ 1710.0,   Difference from target: $ -1710.0")))
     (other-window 1)                ; go to *ledger* buffer
     (insert " ")                    ; simulate modification of ledger buffer
     (delete-char -1)
@@ -45,10 +49,17 @@ http://bugs.ledger-cli.org/show_bug.cgi?id=1107"
     (should ;; current buffer should be *reconcile* buffer
      (equal (buffer-name)           ; current buffer name
             ledger-reconcile-buffer-name))
+    (should
+     (equal (ledger-tests-message-output-so-far)
+            "Cleared and Pending balance: $ 1710.0,   Difference from target: $ -1710.0"))
     (other-window 1)                ; switch to *other* window
     (should ;; Expected: this must be ledger buffer
      (equal (buffer-name)           ; current buffer name
-            (buffer-name ledger-buffer)))))
+            (buffer-name ledger-buffer)))
+    (ledger-reconcile-quit)
+    (should
+     (equal (ledger-tests-message-output-so-far)
+            "Showing all transactions"))))
 
 
 (ert-deftest ledger-reconcile/test-002 ()
@@ -60,11 +71,19 @@ http://bugs.ledger-cli.org/show_bug.cgi?id=1039"
   (ledger-tests-with-temp-file
       demo-ledger
     (ledger-reconcile "Assets:Checking" '(0 "$")) ; launch reconciliation
+    (should
+     (equal (ledger-tests-message-output-so-far)
+            (concat "Pending balance: $ 1710.0\n"
+                    "Cleared and Pending balance: $ 1710.0,   Difference from target: $ -1710.0")))
     (select-window (get-buffer-window ledger-reconcile-buffer-name)) ; IRL user select reconcile window
-    (forward-line 2)                    ; because of ledger-reconcile-buffer-header
-    (ledger-reconcile-toggle)                     ; mark pending
-    (ledger-reconcile-toggle)                     ; mark pending
-    (ledger-reconcile-finish)                     ; C-c C-c
+    (forward-line 2)                 ; because of ledger-reconcile-buffer-header
+    (ledger-reconcile-toggle)        ; mark pending
+    (ledger-reconcile-toggle)        ; mark pending
+    (ledger-reconcile-finish)        ; C-c C-c
+    (should
+     (equal (ledger-tests-message-output-so-far)
+            (concat "Cleared and Pending balance: $ 1410.0,   Difference from target: $ -1410.0\n"
+                    "Cleared and Pending balance: $ 1366.0,   Difference from target: $ -1366.0 [2 times]")))
     (should ;; Expected: buffer reconcile must still exist and be selected
      (equal ledger-reconcile-buffer-name
             (buffer-name (window-buffer (selected-window)))))))

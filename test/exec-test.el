@@ -39,7 +39,11 @@ http://bugs.ledger-cli.org/show_bug.cgi?id=254"
     (let ((ledger-mode-should-check-version t))
       (ledger-check-version))
     (should
-     (eq t ledger-works))))
+     (eq t ledger-works))
+    (should
+     (equal
+      (ledger-tests-message-output-so-far)
+      "Good Ledger Version"))))
 
 
 (provide 'exec-test)

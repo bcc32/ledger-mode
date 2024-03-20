@@ -123,7 +123,8 @@ https://github.com/ledger/ledger-mode/issues/54"
 "))
 
     ;; no matches
-    (ledger-occur "zzzzzz")
+    (let ((text-quoting-style 'straight))
+      (ledger-occur "zzzzzz"))
     (should
      (equal (ledger-test-visible-buffer-string)
             "\
@@ -138,7 +139,11 @@ https://github.com/ledger/ledger-mode/issues/54"
 2024-03-19 Grocery Store
   Expenses:Food:Groceries     $50
   Assets:Checking
-"))))
+"))
+    (should
+     (equal (ledger-tests-message-output-so-far)
+            (concat "No matches found for 'zzzzzz'\n"
+                    "Showing all transactions")))))
 
 
 (ert-deftest ledger-occur/test-004 ()

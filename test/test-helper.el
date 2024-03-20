@@ -39,6 +39,7 @@
       (file-name-directory load-file-name)))
     (buffer-string)))
 
+(defvar ledger-tests-messages-buffer nil)
 
 (defun ledger-tests-reset-custom-values (group)
   "Reset custom variables from GROUP to standard value."
@@ -50,6 +51,19 @@
              (custom-reevaluate-setting (car member)))))))
 
 
+(defun ledger-tests-message-output-so-far ()
+  "Return the messages output by the test so far.
+
+The return value is a string.  When called multiple times, the
+return value comprises the messages that have been collected
+since the last time this function was called in the current test.
+
+Any leading or trailing whitespace is removed, for convenience."
+  (string-trim
+   (with-current-buffer ledger-tests-messages-buffer
+     (delete-and-extract-region (point-min) (point-max)))))
+
+
 (defmacro ledger-tests-with-temp-file (contents &rest body)
   ;; from python-tests-with-temp-file
   "Create a `ledger-mode' enabled file with CONTENTS.
@@ -59,18 +73,24 @@ always located at the beginning of buffer."
   `(let* ((temp-file (make-temp-file "ledger-tests-"))
           (ledger-buffer (find-file-noselect temp-file))
           (ledger-init-file-name nil)
-          (ledger-mode-should-check-version nil))
+          (ledger-mode-should-check-version nil)
+          (ledger-tests-messages-buffer (generate-new-buffer "*ledger test messages*")))
      (unwind-protect
          (with-current-buffer ledger-buffer
            (switch-to-buffer ledger-buffer) ; this selects window
            (ledger-mode)
            (insert ,contents)
            (goto-char (point-min))
-           ,@body)
+           (let ((inhibit-message t)
+                 (messages-buffer-name (buffer-name ledger-tests-messages-buffer)))
+             ,@body))
        (when (buffer-live-p ledger-buffer)
          (with-current-buffer ledger-buffer
            (set-buffer-modified-p nil)
            (kill-buffer)))
+       (when-let ((trailing-messages (ledger-tests-message-output-so-far))
+                  ((not (string-empty-p trailing-messages))))
+         (message "%s" trailing-messages))
        (ledger-tests-reset-custom-values 'ledger)
        (delete-file temp-file))))
 
