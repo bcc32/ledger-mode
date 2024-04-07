@@ -141,6 +141,13 @@ Argument OVL-BOUNDS contains bounds for the transactions to be left visible."
   (remove-overlays (point-min)
                    (point-max) ledger-occur-overlay-property-name t))
 
+(defun ledger-occur--region-spans-multiple-xacts-p (beg end)
+  "Return non-nil if the region from BEG to END spans a transaction boundary."
+  (save-excursion
+    (goto-char beg)
+    (ledger-navigate-end-of-xact)
+    (< (point) end)))
+
 (defun ledger-occur-find-matches (regex)
   "Return a list of bounds for transactions matching REGEX."
   (save-excursion
@@ -150,7 +157,10 @@ Argument OVL-BOUNDS contains bounds for the transactions to be left visible."
       ;; Search loop
       (while (not (eobp))
         ;; if something found
+
         (when-let ((endpoint (re-search-forward regex nil 'end))
+                   ((not (ledger-occur--region-spans-multiple-xacts-p (match-beginning 0)
+                                                                      (match-end 0))))
                    (bounds (ledger-navigate-find-element-extents endpoint)))
           (push bounds lines)
           ;; move to the end of the xact, no need to search inside it more
