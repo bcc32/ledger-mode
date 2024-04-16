@@ -184,6 +184,9 @@ an alist (ACCOUNT-ELEMENT . NODE)."
               (nconc root (list node)))
             (setq root (cdr node))))))))
 
+;; FIXME: It's kind of pointless to construct this whole tree, then only walk
+;; one path down it.  At that point, we might as well just use the accounts
+;; list, filter by prefix, and then make sure we only produce a single next step.
 (defun ledger-complete-account-next-steps (start end)
   "Return a list of next steps for the account prefix between START and END."
   (let* ((current (buffer-substring start end))
@@ -198,19 +201,17 @@ an alist (ACCOUNT-ELEMENT . NODE)."
                   root (cdr entry))
           (setq root nil elements nil)))
       (setq elements (cdr elements)))
-    (setq root (delete (list (car elements) t) root))
+    (setq root (delete (list (car elements) t) root) ;FIXME: I suspect this line is unnecessary
+          prefix (and prefix (concat prefix ":")))
     (and root
          (sort
-          (mapcar (function
-                   (lambda (x)
-                     (let ((term (if prefix
-                                     (concat prefix ":" (car x))
-                                   (car x))))
-                       (if (> (length (cdr x)) 1)
-                           (concat term ":")
-                         term))))
+          (mapcar (lambda (x)
+                    (let ((term (concat prefix (car x))))
+                      (if (cddr x)      ;account has children
+                          (concat term ":")
+                        term)))
                   (cdr root))
-          'string-lessp))))
+          #'string-lessp))))
 
 (defvar ledger-complete--current-time-for-testing nil
   "Internal, used for testing only.")
