@@ -111,7 +111,7 @@ If non-nil, visit the beginning of the transaction instead."
   :group 'ledger-report)
 
 (defcustom ledger-report-native-highlighting-arguments '("--color" "--force-color")
-  "List of ledger args needed by `ledger-report-use-native-highlighting'.
+  "List of ledger arguments needed by `ledger-report-use-native-highlighting'.
 
 If you are using hledger instead of ledger, you might want to set
 this variable to `(\"--color=always\")'."
@@ -442,7 +442,7 @@ called in the ledger buffer for which the report is being run."
                                (string-join arg " ")
                              (shell-quote-argument arg)))))
             (replace-match quoted 'fixedcase 'literal))))
-       (buffer-string))))
+      (buffer-string))))
 
 (defun ledger-report--cmd-needs-links-p (cmd)
   "Check links should be added to the report produced by CMD."
@@ -453,7 +453,7 @@ called in the ledger buffer for which the report is being run."
        (not (string-match "--subtotal" cmd))))
 
 (defun ledger-report--compute-extra-args (report-cmd)
-  "Compute extra args to add to REPORT-CMD."
+  "Compute extra arguments to add to REPORT-CMD."
   `(,@(when (ledger-report--cmd-needs-links-p report-cmd)
         '("--prepend-format=%(filename):%(beg_line):"))
     ,@(when ledger-report-auto-width
@@ -566,7 +566,7 @@ specific posting at point instead."
         (ledger-navigate-beginning-of-xact)))))
 
 (defun ledger-report-goto ()
-  "Goto the ledger report buffer."
+  "Go to the ledger report buffer."
   (interactive)
   (let ((rbuf (get-buffer ledger-report-buffer-name)))
     (if (not rbuf)

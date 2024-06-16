@@ -61,10 +61,11 @@
   "Interface to the Ledger command-line accounting program."
   :group 'data)
 
-(defconst ledger-version "3.0"
-  "The version of ledger.el currently loaded.")
+;; TODO: remove this
+(defconst ledger-version "3.0")
 
-(defconst ledger-mode-version "4.0.0")
+(defconst ledger-mode-version "4.0.0"
+  "The version of ledger-mode currently loaded.")
 
 (defun ledger-mode-dump-variable (var)
   "Format VAR for dump to buffer."

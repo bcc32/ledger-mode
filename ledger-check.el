@@ -94,7 +94,7 @@
         (insert "No errors or warnings reported."))))
 
 (defun ledger-check-goto ()
-  "Goto the ledger check buffer."
+  "Go to the ledger check buffer."
   (interactive)
   (let ((rbuf (get-buffer ledger-check-buffer-name)))
     (if (not rbuf)
