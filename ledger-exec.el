@@ -50,12 +50,12 @@
   :risky t
   :group 'ledger-exec)
 
-(defun ledger-exec-handle-error (ledger-errfile)
-  "Deal with ledger errors contained in LEDGER-ERRFILE."
+(defun ledger-exec-handle-error (errfile)
+  "Deal with ledger errors contained in ERRFILE."
   (with-current-buffer (get-buffer-create "*Ledger Error*")
     (let ((buffer-read-only nil))
       (delete-region (point-min) (point-max))
-      (insert-file-contents ledger-errfile))
+      (insert-file-contents errfile))
     (view-mode)
     (setq buffer-read-only t)
     (current-buffer)))

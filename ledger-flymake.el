@@ -56,10 +56,10 @@ passed regardless of the value."
   :group 'ledger)
 
 ;; Based on the example from Flymake's info:
-(defun ledger-flymake (report-fn &rest _args)
+(defun ledger-flymake (report-function &rest _args)
   "A Flymake backend for `ledger-mode'.
 
-Flymake calls this with REPORT-FN as needed."
+Flymake calls this with REPORT-FUNCTION as needed."
   (unless (executable-find ledger-binary-path)
     (error "Cannot find ledger"))
   ;; If a live process launched in an earlier check was found, that
@@ -101,7 +101,7 @@ Flymake calls this with REPORT-FN as needed."
                       (goto-char (point-min))
                       ;; Parse the output buffer for diagnostic's
                       ;; messages and locations, collect them in a list
-                      ;; of objects, and call `report-fn'.
+                      ;; of objects, and call `report-function'.
                       (cl-loop
                        while (search-forward-regexp
                               ;; This regex needs to match the whole error.  We
@@ -124,7 +124,7 @@ Flymake calls this with REPORT-FN as needed."
                                                         type
                                                         msg)
                        into diags
-                       finally (funcall report-fn diags)))
+                       finally (funcall report-function diags)))
                   (flymake-log :warning "Canceling obsolete check %s"
                                proc))
               ;; Cleanup the temporary buffer used to hold the

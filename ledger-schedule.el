@@ -312,7 +312,7 @@ default to `ledger-schedule-look-backward'
 LOOK-FORWARD is the number of days in the future to look at
 default to `ledger-schedule-look-forward'
 
-Use a prefix arg to change the default value"
+Use a prefix argument to change the default value"
   (interactive (if current-prefix-arg
                    (list (read-file-name "Schedule File: " () ledger-schedule-file t)
                          (read-number "Look backward: " ledger-schedule-look-backward)
