@@ -131,7 +131,7 @@ Then one of the elements this function returns will be
                         data)
                 (push (cons d nil) data))))
           (push (cons account data) account-list)
-          (puthash account t seen)))
+          (puthash account 0 seen)))
       ;; Next, gather all accounts declared in postings
       (unless
           ;; FIXME: People who have set `ledger-flymake-be-pedantic' to non-nil
@@ -145,9 +145,11 @@ Then one of the elements this function returns will be
              (while (re-search-forward ledger-account-any-status-regex end t)
                (let ((account (match-string-no-properties 1)))
                  (unless (gethash account seen)
-                   (puthash account t seen)
-                   (push (cons account nil) account-list))))))))
-      (sort account-list (lambda (a b) (string-lessp (car a) (car b)))))))
+                   (push (cons account nil) account-list))
+                 (cl-incf (gethash account seen 0))))))))
+      (sort account-list
+            (lambda (a b) (> (gethash (car a) seen)
+                             (gethash (car b) seen)))))))
 
 (defun ledger-accounts-list-in-buffer ()
   "Return a list of all known account names in the current buffer as strings.
