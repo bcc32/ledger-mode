@@ -4,6 +4,8 @@
 
 ;; This file is not part of GNU Emacs.
 
+;; Package-Requires: ((emacs "26.1"))
+
 ;; This is free software; you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free
 ;; Software Foundation; either version 3, or (at your option) any later
@@ -32,10 +34,6 @@
 (require 'flymake)
 (require 'ledger-exec)                  ; for `ledger-binary-path'
 (require 'ledger-report)                ; for `ledger-master-file'
-
-;; To silence byte compiler warnings in Emacs 25 and older:
-(declare-function flymake-diag-region "flymake" (buffer line &optional col))
-(declare-function flymake-make-diagnostic "flymake" (buffer beg end type text &optional data overlay-properties))
 
 (defvar-local ledger--flymake-proc nil)
 
@@ -134,8 +132,6 @@ Flymake calls this with REPORT-FN as needed."
 ;;;###autoload
 (defun ledger-flymake-enable ()
   "Enable `flymake-mode' in `ledger-mode' buffers."
-  (unless (> emacs-major-version 25)
-    (error "Ledger-flymake requires Emacs version 26 or higher"))
   ;; Add `ledger-flymake' to `flymake-diagnostic-functions' so that flymake can
   ;; work in ledger-mode:
   (add-hook 'flymake-diagnostic-functions 'ledger-flymake nil t)
