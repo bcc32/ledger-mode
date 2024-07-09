@@ -336,7 +336,7 @@ an alist (ACCOUNT-ELEMENT . NODE)."
       (let ((prefix (buffer-substring-no-properties start end)))
         (list start end
               (pcase collection
-                ;; `func-arity' isn't available until Emacs 26, so we have to
+                ;; TODO: remove this `func-arity' isn't available until Emacs 26, so we have to
                 ;; manually track the arity of the functions.
                 (`(nullary . ,f)
                  ;; a nullary function that returns a completion collection

@@ -129,6 +129,7 @@ MOMENT is an encoded date"
             (if (and year (> (length year) 0))
                 (setq year (string-to-number year)))
             (funcall callback start
+                     ;; TODO: upgrade all callsites
                      (encode-time 0 0 0 day month
                                   (or year current-year))
                      state payee))))
