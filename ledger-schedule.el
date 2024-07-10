@@ -273,7 +273,7 @@ date descriptor."
                                                       (string-match "[A-Za-z]" (cadr day-parts)))))
               (day-of-week (ledger-schedule-encode-day-of-week
                             (substring (cadr day-parts) (string-match "[A-Za-z]" (cadr day-parts))))))
-          (ledger-schedule-constrain-every-count-day day-of-week increment (encode-time 0 0 0 base-day (car months) (car years))))
+          (ledger-schedule-constrain-every-count-day day-of-week increment (encode-time (list 0 0 0 base-day (car months) (car years)))))
       (let ((count (string-to-number (substring (car day-parts) 0 1)))
             (day-of-week (ledger-schedule-encode-day-of-week
                           (substring (car day-parts) (string-match "[A-Za-z]" (car day-parts))))))

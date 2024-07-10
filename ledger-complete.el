@@ -234,10 +234,10 @@ an alist (ACCOUNT-ELEMENT . NODE)."
          (month (and month-string
                      (string-to-number month-string)))
          (day (string-to-number day-string))
-         (dates (list (encode-time 0 0 0 day (or month this-month) this-year)
+         (dates (list (encode-time (list 0 0 0 day (or month this-month) this-year))
                       (if month
-                          (encode-time 0 0 0 day month last-year)
-                        (encode-time 0 0 0 day last-month last-month-year)))))
+                          (encode-time (list 0 0 0 day month last-year))
+                        (encode-time (list 0 0 0 day last-month last-month-year))))))
     (let ((collection
            (list (concat (ledger-format-date
                           (cl-find-if (lambda (date) (not (time-less-p now date))) dates))
@@ -255,17 +255,17 @@ an alist (ACCOUNT-ELEMENT . NODE)."
   (let* ((tx-year (string-to-number tx-year-string))
          (tx-month (string-to-number tx-month-string))
          (tx-day (string-to-number tx-day-string))
-         (tx-date (encode-time 0 0 0 tx-day tx-month tx-year))
+         (tx-date (encode-time (list 0 0 0 tx-day tx-month tx-year)))
          (next-month (if (< tx-month 12) (1+ tx-month) 1))
          (next-year (1+ tx-year))
          (next-month-year (if (< tx-month 12) tx-year next-year))
          (month (and month-string
                      (string-to-number month-string)))
          (day (string-to-number day-string))
-         (dates (list (encode-time 0 0 0 day (or month tx-month) tx-year)
+         (dates (list (encode-time (list 0 0 0 day (or month tx-month) tx-year))
                       (if month
-                          (encode-time 0 0 0 day month next-year)
-                        (encode-time 0 0 0 day next-month next-month-year)))))
+                          (encode-time (list 0 0 0 day month next-year))
+                        (encode-time (list 0 0 0 day next-month next-month-year))))))
     (let ((collection
            (list (concat (ledger-format-date
                           (cl-find-if (lambda (date) (not (time-less-p date tx-date))) dates))

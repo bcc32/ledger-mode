@@ -129,9 +129,8 @@ MOMENT is an encoded date"
             (if (and year (> (length year) 0))
                 (setq year (string-to-number year)))
             (funcall callback start
-                     ;; TODO: upgrade all callsites
-                     (encode-time 0 0 0 day month
-                                  (or year current-year))
+                     (encode-time (list 0 0 0 day month
+                                        (or year current-year)))
                      state payee))))
       (forward-line))))
 
@@ -185,9 +184,10 @@ Leave point on the first amount, if any, otherwise the first account."
   "Try to parse DATE using `ledger-iso-date-regexp' and return a time value or nil."
   (save-match-data
     (when (string-match ledger-iso-date-regexp date)
-      (encode-time 0 0 0 (string-to-number (match-string 4 date))
-                   (string-to-number (match-string 3 date))
-                   (string-to-number (match-string 2 date))))))
+      (encode-time (list 0 0 0
+                         (string-to-number (match-string 4 date))
+                         (string-to-number (match-string 3 date))
+                         (string-to-number (match-string 2 date)))))))
 
 (defun ledger-add-transaction (transaction-text &optional insert-at-point)
   "Use ledger xact TRANSACTION-TEXT to add a transaction to the buffer.

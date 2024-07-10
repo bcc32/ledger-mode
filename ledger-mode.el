@@ -327,12 +327,12 @@ which part of the date string point is in."
             ;; automatically inferred from the other arguments, since the
             ;; appropriate DST value may differ from `time-old'.
             (encode-time
-             0                          ; second
-             0                          ; minute
-             0                          ; hour
-             (+ (if (eq date-cat 'day)   n 0) (nth 3 time-old))
-             (+ (if (eq date-cat 'month) n 0) (nth 4 time-old))
-             (+ (if (eq date-cat 'year)  n 0) (nth 5 time-old)))))
+             (list 0                    ; second
+                   0                    ; minute
+                   0                    ; hour
+                   (+ (if (eq date-cat 'day)   n 0) (nth 3 time-old))
+                   (+ (if (eq date-cat 'month) n 0) (nth 4 time-old))
+                   (+ (if (eq date-cat 'year)  n 0) (nth 5 time-old))))))
     (replace-match (format-time-string (concat "%Y" date-separator "%m" date-separator "%d")
                                        time-new)
                    'fixedcase

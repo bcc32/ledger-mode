@@ -393,7 +393,7 @@ account Expenses:Groceries
 https://github.com/ledger/ledger-mode/issues/419"
   :tags '(complete regress)
   (let ((ledger-complete--current-time-for-testing ;2024-01-21
-         (encode-time 0 0 0 21 1 2024))
+         (encode-time '(0 0 0 21 1 2024)))
         (ledger-default-date-format ledger-iso-date-format))
     (ledger-tests-with-temp-file
         "01-19"
@@ -415,7 +415,7 @@ https://github.com/ledger/ledger-mode/issues/419"
 https://github.com/ledger/ledger-mode/issues/419"
   :tags '(complete regress)
   (let ((ledger-complete--current-time-for-testing ;2024-01-21
-         (encode-time 0 0 0 21 1 2024))
+         (encode-time '(0 0 0 21 1 2024)))
         (ledger-default-date-format ledger-iso-date-format))
     (ledger-tests-with-temp-file
         "19"
