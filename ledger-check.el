@@ -29,7 +29,7 @@
 (require 'easymenu)
 (require 'ledger-navigate)
 (require 'ledger-regex)
-(require 'ledger-report) ; for ledger-master-file
+(require 'ledger-report)
 
 
 (defvar ledger-check-buffer-name "*Ledger Check*")
@@ -78,8 +78,7 @@
 
   (goto-char (point-min))
   (while (re-search-forward ledger-error-or-warning-regex nil t)
-    (let* ((file (match-string 1))
-           (line (string-to-number (match-string 2)))
+    (let* ((line (string-to-number (match-string 2)))
            (source-marker
             (with-current-buffer ledger-check--source-buffer
               (save-excursion
@@ -87,12 +86,11 @@
                   (widen)
                   (ledger-navigate-to-line line)
                   (point-marker))))))
-      (when file
-        (set-text-properties (line-beginning-position) (line-end-position)
-                             (list 'ledger-source source-marker))
-        (add-text-properties (line-beginning-position) (line-end-position)
-                             (list 'font-lock-face 'ledger-font-report-clickable-face))
-        (end-of-line))))
+      (set-text-properties (line-beginning-position) (line-end-position)
+                           (list 'ledger-source source-marker))
+      (add-text-properties (line-beginning-position) (line-end-position)
+                           (list 'font-lock-face 'ledger-font-report-clickable-face))
+      (end-of-line)))
   (when (= (buffer-size) 0)
     (insert "No errors or warnings reported.\n")))
 
