@@ -59,26 +59,24 @@
 
 (ert-deftest ledger-check/do-check-parses-error-line ()
   "An error line is decorated with `ledger-source' text properties."
-  (let* ((tmp (make-temp-file "ledger-check-")))
-    (unwind-protect
-        (progn
-          (with-temp-file tmp
-            (insert "2024/01/01 Acme\n"
-                    "    Expenses:Food   $10\n"
-                    "    Assets:Cash\n"))
-          (cl-letf (((symbol-function 'shell-command)
-                     (lambda (_cmd &rest _)
-                       (insert (format "Error: \"%s\", line 2: bad amount\n" tmp)))))
-            (with-temp-buffer
-              (ledger-do-check)
-              ;; The marked line should carry a 'ledger-source text property
-              ;; whose CDR is a marker into the file.
-              (goto-char (point-min))
-              (let ((src (get-text-property (point) 'ledger-source)))
-                (should (consp src))
-                (should (string= (car src) tmp))
-                (should (markerp (cdr src)))))))
-      (when (file-exists-p tmp) (delete-file tmp)))))
+  (ledger-tests-with-temp-file
+      "\
+2024/01/01 Acme
+    Expenses:Food   $10
+    Assets:Cash    -$5
+"
+    (let ((src-buffer (current-buffer)))
+      (ledger-check-buffer)
+      (with-current-buffer ledger-check-buffer-name
+        ;; The marked line should carry a 'ledger-source text property
+        ;; whose value is a marker in the source buffer.
+        (goto-char (point-min))
+        (let ((src (get-text-property (point) 'ledger-source)))
+          (should (markerp src))
+          (should (eq (marker-buffer src) src-buffer))
+          (should (equal (with-current-buffer src-buffer
+                           (line-number-at-pos src))
+                         2)))))))
 
 (ert-deftest ledger-check/check-buffer-creates-output-buffer ()
   "`ledger-check-buffer' switches to the check buffer in `ledger-check-mode'."
