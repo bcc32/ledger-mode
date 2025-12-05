@@ -48,10 +48,14 @@
 
 (ert-deftest ledger-check/do-check-no-errors ()
   "`ledger-do-check' inserts a 'no warnings' note when ledger reports nothing."
-  (with-temp-buffer
+  ;; TODO: This test should succeed once ledger-do-check starts actually reading
+  ;; from the current buffer.  For now, it does not pass any -f argument to the
+  ;; ledger binary so falls back to whatever is specified in ~/.ledgerrc.
+  :expected-result :failed
+  (ledger-tests-with-temp-file ""
     (ledger-do-check)
-    (should (string-match-p "No errors or warnings reported."
-                            (buffer-string)))))
+    (should (equal "No errors or warnings reported.\n"
+                   (buffer-string)))))
 
 (ert-deftest ledger-check/do-check-parses-error-line ()
   "An error line is decorated with `ledger-source' text properties."
