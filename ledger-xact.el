@@ -32,6 +32,7 @@
 (require 'ledger-exec)
 (require 'ledger-post)
 (declare-function ledger-read-date "ledger-mode" (prompt))
+(declare-function ledger-mode "ledger-mode" ())
 
 ;; TODO: This file depends on code in ledger-mode.el, which depends on this.
 
@@ -45,6 +46,15 @@
 When nil, `ledger-add-transaction' will not prompt twice."
   :type 'boolean
   :package-version '(ledger-mode . "4.0.1")
+  :group 'ledger)
+
+(defcustom ledger-add-transaction-idle-preview t
+  "When non-nil, a live preview of the to-be-added transaction is shown.
+Requires `ledger-add-transaction-prompt-for-text' to be non-nil."
+  :type '(choice (const :tag "Do not preview" nil)
+                 (const :tag "Preview when idle" t)
+                 (number :tag "Preview with custom delay"))
+  :package-version '(ledger-mode . "4.1")
   :group 'ledger)
 
 (defvar-local ledger-xact-highlight-overlay (list))
@@ -173,55 +183,166 @@ Leave point on the first amount, if any, otherwise the first account."
 (defvar ledger-add-transaction-last-date nil
   "Last date entered using `ledger-read-transaction'.")
 
+(defvar ledger-xact--preview-buffer-name "*ledger xact preview*")
+(defvar-local ledger-xact--preview-timer nil)
+(defvar-local ledger-xact--date nil
+  "In a minibuffer for the transaction text, the transaction date.")
+(defvar-local ledger-xact--ledger-buf nil
+  "In a minibuffer for the transaction text, the original ledger buffer.")
+
+(defun ledger-xact--create-preview-buffer ()
+  "Create a buffer to display ledger xact output previews and return it.
+
+If the buffer already exists, return it as-is."
+  (or (get-buffer ledger-xact--preview-buffer-name)
+      (with-current-buffer (get-buffer-create ledger-xact--preview-buffer-name)
+        ;; Enable `ledger-mode' just for syntax highlighting.  Skip all minor
+        ;; modes except for `font-lock-mode'.
+        (delay-mode-hooks (ledger-mode))
+        (font-lock-mode)
+        (setq buffer-read-only t)
+        (set-buffer-modified-p nil)
+        (current-buffer))))
+
+(defun ledger-xact--preview (ledger-buf date args)
+  "Run \"ledger xact\" with DATE and ARGS and display the output.
+
+LEDGER-BUF's contents are passed as input to \"ledger xact\".
+
+Return the window displaying the output buffer, or nil if it was not
+displayed."
+  (let ((preview-buf (ledger-xact--create-preview-buffer)))
+    (with-current-buffer preview-buf
+      (with-silent-modifications
+        ;; Don't use `ledger-exec-ledger' because it pops up any error
+        ;; output in a separate buffer.  For this use case, it is
+        ;; preferable to display the error in the preview buffer
+        ;; instead.
+        (with-current-buffer ledger-buf
+          (apply #'call-process-region
+                 nil nil ledger-binary-path
+                 nil preview-buf t
+                 "xact" date args))
+        (ledger-post-align-postings (point-min) (point-max)))
+      (goto-char (point-min)))
+    (display-buffer preview-buf
+                    '((display-buffer-reuse-window display-buffer-at-bottom)
+                      (window-height . fit-window-to-buffer)))))
+
+(defun ledger-xact--preview-timer (minibuffer)
+  "Preview the ledger xact output from MINIBUFFER's current contents."
+  (setq ledger-xact--preview-timer nil)
+  ;; TODO: It would be more correct to use `minibufferp' and pass a non-nil LIVE
+  ;; argument, but that feature isn't available until Emacs 28.3.
+  (when (and (buffer-live-p minibuffer)
+             (eq minibuffer (window-buffer (active-minibuffer-window))))
+    (with-current-buffer minibuffer
+      (let ((ledger-buf ledger-xact--ledger-buf)
+            (date ledger-xact--date))
+        (when-let* ((args (ledger-parse-transaction-text (minibuffer-contents))))
+          (while-no-input
+            (let ((window
+                   (ledger-xact--preview ledger-buf date args)))
+              (setq-local minibuffer-scroll-window window))))))))
+
+(defun ledger-xact--after-change-function (_beg _end _len)
+  "Added to `after-change-functions' in transaction-reading minibuffers."
+  (when-let* ((buf (get-buffer ledger-xact--preview-buffer-name)))
+    (with-current-buffer buf
+      (with-silent-modifications
+        (erase-buffer))))
+  (unless ledger-xact--preview-timer
+    (setq ledger-xact--preview-timer
+          (run-with-idle-timer
+           (if (numberp ledger-add-transaction-idle-preview)
+               ledger-add-transaction-idle-preview
+             0.1)
+           nil #'ledger-xact--preview-timer (current-buffer)))))
+
+(defun ledger-xact--hide-preview-window ()
+  "Similar to `minibuffer-restore-windows', for transaction-reading minibuffers."
+  ;; This variable was introduced in Emacs 28.1.  The default, matching the
+  ;; behavior in previous versions of Emacs, is equivalent to non-nil.  We only
+  ;; want to delete the window if the default window configuration restore logic
+  ;; wouldn't have.
+  (when (and (boundp 'read-minibuffer-restore-windows)
+             (not read-minibuffer-restore-windows))
+    (when-let* ((window (get-buffer-window ledger-xact--preview-buffer-name)))
+      (delete-window window))))
+
+(defun ledger-read-transaction-text (date)
+  "Read the text of a transaction with date DATE.
+
+The ledger buffer should be current when this function is called, since
+it will be used as input for \"ledger xact\" for the sake of previewing
+output."
+  (let ((ledger-buf (current-buffer)))
+    (minibuffer-with-setup-hook
+        (lambda ()
+          (setq ledger-xact--date date
+                ledger-xact--ledger-buf ledger-buf)
+          (when ledger-add-transaction-idle-preview
+            (add-hook 'after-change-functions #'ledger-xact--after-change-function nil t)
+            (add-hook 'minibuffer-exit-hook #'ledger-xact--hide-preview-window nil t)))
+      (read-string (concat "xact " date ": ") nil 'ledger-minibuffer-history))))
+
 (defun ledger-read-transaction ()
   "Read the text of a transaction, which is at least the current date."
   (let ((date (ledger-read-date "Date: ")))
     (concat date " "
             (when ledger-add-transaction-prompt-for-text
-              (read-string (concat "xact " date ": ") nil 'ledger-minibuffer-history)))))
+              (ledger-read-transaction-text date)))))
 
 (defun ledger-parse-iso-date (date)
   "Try to parse DATE using `ledger-iso-date-regexp' and return a time value or nil."
-  (save-match-data
-    (when (string-match ledger-iso-date-regexp date)
-      (encode-time 0 0 0 (string-to-number (match-string 4 date))
-                   (string-to-number (match-string 3 date))
-                   (string-to-number (match-string 2 date))))))
+  (when (string-match ledger-iso-date-regexp date)
+    (encode-time 0 0 0 (string-to-number (match-string 4 date))
+                 (string-to-number (match-string 3 date))
+                 (string-to-number (match-string 2 date)))))
+
+(defun ledger-parse-transaction-text (transaction-text)
+  "Parse TRANSACTION-TEXT as a date and maybe some arguments.
+
+Return (DATE . ARGS), a list of strings."
+  ;; TODO: This whole function could just be replaced with
+  ;; `split-string-shell-command' when the minimum supported Emacs version is
+  ;; Emacs 28.
+  (with-temp-buffer
+    (insert transaction-text)
+    (mapcar #'eval (eshell-parse-arguments (point-min) (point-max)))))
 
 (defun ledger-add-transaction (transaction-text &optional insert-at-point)
   "Use ledger xact TRANSACTION-TEXT to add a transaction to the buffer.
-If INSERT-AT-POINT is non-nil insert the transaction there,
-otherwise call `ledger-xact-find-slot' to insert it at the
-correct chronological place in the buffer.
 
-Interactively, the date is requested via `ledger-read-date' and
-the \\[universal-argument] enables INSERT-AT-POINT."
+If INSERT-AT-POINT is non-nil insert the transaction there, otherwise
+call `ledger-xact-find-slot' to insert it at the correct chronological
+place in the buffer.
+
+Interactively, the date is requested via `ledger-read-date' and the
+\\[universal-argument] enables INSERT-AT-POINT."
   (interactive (list (ledger-read-transaction) current-prefix-arg))
-  (let* ((args (with-temp-buffer
-                 (insert transaction-text)
-                 (eshell-parse-arguments (point-min) (point-max))))
+  (let* ((args (ledger-parse-transaction-text transaction-text))
+         (date (pop args))
          (ledger-buf (current-buffer))
          (separator "\n"))
     (unless insert-at-point
-      (let* ((date (car args))
-             (parsed-date (ledger-parse-iso-date date)))
+      (let* ((parsed-date (ledger-parse-iso-date date)))
         (setq ledger-add-transaction-last-date parsed-date)
         (push-mark)
         ;; TODO: what about when it can't be parsed?
         (ledger-xact-find-slot (or parsed-date date))
         (when (looking-at-p "\n*\\'")
           (setq separator ""))))
-    (if (cdr args)
+    (if args
         (save-excursion
           (insert
            (with-temp-buffer
-             (apply #'ledger-exec-ledger ledger-buf (current-buffer) "xact"
-                    (mapcar 'eval args))
+             (apply #'ledger-exec-ledger ledger-buf (current-buffer) "xact" date args)
              (goto-char (point-min))
              (ledger-post-align-postings (point-min) (point-max))
              (buffer-string))
            separator))
-      (insert (car args) " ")
+      (insert date " ")
       (save-excursion (insert "\n" separator)))))
 
 (provide 'ledger-xact)
