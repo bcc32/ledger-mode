@@ -145,17 +145,15 @@ Argument OVL-BOUNDS contains bounds for the transactions to be left visible."
   "Return a list of bounds for transactions matching REGEX."
   (save-excursion
     (goto-char (point-min))
-    ;; Set initial values for variables
-    (let (lines)
-      ;; Search loop
+    (let (all-bounds)
       (while (not (eobp))
         ;; if something found
         (when-let* ((endpoint (re-search-forward regex nil 'end))
                     (bounds (ledger-navigate-find-element-extents endpoint)))
-          (push bounds lines)
+          (push bounds all-bounds)
           ;; move to the end of the xact, no need to search inside it more
           (goto-char (cadr bounds))))
-      (nreverse lines))))
+      (nreverse all-bounds))))
 
 (defun ledger-occur-compress-matches (buffer-matches)
   "Identify sequential xacts to reduce number of overlays required.
