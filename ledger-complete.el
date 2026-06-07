@@ -185,10 +185,9 @@ an alist (ACCOUNT-ELEMENT . NODE)."
               (nconc root (list node)))
             (setq root (cdr node))))))))
 
-(defun ledger-complete-account-next-steps (start end)
-  "Return a list of next steps for the account prefix between START and END."
-  (let* ((current (buffer-substring start end))
-         (elements (and current (split-string current ":")))
+(defun ledger-complete-account-next-steps (current)
+  "Return a list of next steps for the account prefix CURRENT."
+  (let* ((elements (and current (split-string current ":")))
          (root (ledger-accounts-tree))
          (prefix nil))
     (while (cdr elements)
@@ -332,7 +331,8 @@ an alist (ACCOUNT-ELEMENT . NODE)."
                  realign-after t
                  collection (if ledger-complete-in-steps
                                 (lambda ()
-                                  (ledger-complete-account-next-steps start end))
+                                  (ledger-complete-account-next-steps
+                                   (buffer-substring-no-properties start end)))
                               #'ledger-accounts-list))))
     (when collection
       (list start end

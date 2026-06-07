@@ -597,13 +597,9 @@ Covers the inner while-loop traversal of nested account elements."
       (insert "account Assets:Bank:Savings\n")
       (insert "account Assets:Cash\n")
       (insert "account Expenses:Food\n")
-      ;; Insert prefix and ask for next steps starting at "Assets:Bank:"
-      (let ((p1 (point-max)))
-        (insert "Assets:Bank:")
-        (let* ((p2 (point-max))
-               (steps (ledger-complete-account-next-steps p1 p2)))
-          (should (member "Assets:Bank:Checking" steps))
-          (should (member "Assets:Bank:Savings" steps)))))))
+      (let ((steps (ledger-complete-account-next-steps "Assets:Bank:")))
+        (should (member "Assets:Bank:Checking" steps))
+        (should (member "Assets:Bank:Savings" steps))))))
 
 (ert-deftest ledger-complete/account-next-steps-unknown-prefix ()
   "When a prefix element is unknown, descent stops and returns nil.
@@ -614,11 +610,8 @@ Covers the `(setq root nil elements nil)' arm."
     (with-temp-buffer
       (ledger-mode)
       (insert "account Assets:Bank:Checking\n")
-      (let ((p1 (point-max)))
-        (insert "Assets:Nope:")
-        (let* ((p2 (point-max))
-               (steps (ledger-complete-account-next-steps p1 p2)))
-          (should (null steps)))))))
+      (let ((steps (ledger-complete-account-next-steps "Assets:Nope:")))
+        (should (null steps))))))
 
 (ert-deftest ledger-complete/complete-date-month-day-current-year ()
   "Completing a date with month/day in the past of current year.
