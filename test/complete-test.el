@@ -733,6 +733,75 @@ Covers the `user-error' branch."
     (end-of-line)
     (should-error (ledger-fully-complete-xact) :type 'user-error)))
 
+(ert-deftest ledger-complete/exact-payee-present-in-buffer ()
+  "Completion may include the exact string at point if it is present elsewhere."
+  :tags '(complete regress)
+  :expected-result :failed
+  (ledger-tests-with-temp-file "\
+2026-01-01 Grocery Store
+    Expenses:Groceries  $10
+    Assets:Cash
+
+2026-01-02 Grocery Store 2
+    Expenses:Groceries  $10
+    Assets:Cash
+
+2026-01-03 Grocery Stor
+    Expenses:Groceries  $10
+    Assets:Cash
+"
+    (goto-char (point-max))
+    (forward-line -3)
+    (end-of-line)
+    ;; uniquely completes to longest common prefix: "Grocery Store"
+    (let ((inhibit-interaction t))
+      (completion-at-point))
+    (should (equal
+             (buffer-substring-no-properties (line-beginning-position) (line-end-position))
+             "2026-01-03 Grocery Store"))
+    ;; Since this is a valid payee somewhere else in the buffer, no need to
+    ;; change it.
+    (let ((inhibit-interaction t))
+      (completion-at-point))
+    (should (equal
+             (buffer-substring-no-properties (line-beginning-position) (line-end-position))
+             "2026-01-03 Grocery Store"))))
+
+(ert-deftest ledger-complete/exact-account-present-in-buffer ()
+  "Completion may include the exact string at point if it is present elsewhere."
+  :tags '(complete regress)
+  :expected-result :failed
+  (ledger-tests-with-temp-file "\
+2026-01-01 Grocery Store
+    Expenses:Groceries  $10
+    Assets:Cash
+
+2026-01-02 Grocery Store 2
+    Expenses:Groceries:Snacks  $10
+    Assets:Cash
+
+2026-01-03 Grocery Stor
+    Expenses:Groc  $10
+    Assets:Cash
+"
+    (let ((ledger-post-auto-align nil))
+      (goto-char (point-max))
+      (forward-line -2)
+      (forward-word 2)
+      ;; uniquely completes to longest common prefix: "Expenses:Groceries"
+      (let ((inhibit-interaction t))
+        (completion-at-point))
+      (should (equal
+               (buffer-substring-no-properties (line-beginning-position) (line-end-position))
+               "    Expenses:Groceries  $10"))
+      ;; Since this is a valid account somewhere else in the buffer, no need to
+      ;; change it.
+      (let ((inhibit-interaction t))
+        (completion-at-point))
+      (should (equal
+               (buffer-substring-no-properties (line-beginning-position) (line-end-position))
+               "    Expenses:Groceries  $10")))))
+
 (provide 'complete-test)
 
 ;;; complete-test.el ends here
