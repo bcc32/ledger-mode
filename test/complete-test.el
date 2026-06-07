@@ -240,7 +240,6 @@ payee Bar Baz
 (ert-deftest ledger-complete/test-complete-payee-point-inside ()
   "Completion boundaries are correct for payees."
   :tags '(complete regress)
-  :expected-result :failed
   (ledger-tests-with-temp-file
       "payee Foo Bar
 
@@ -502,7 +501,6 @@ Regression test for https://github.com/ledger/ledger-mode/pull/455."
 (ert-deftest ledger-complete/complete-txn-comment-point-inside ()
   "Completion uses correct boundaries for transaction comments."
   :tags '(complete regress)
-  :expected-result :failed
   (ledger-tests-with-temp-file
       "\
 ; file comment

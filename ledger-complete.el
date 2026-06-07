@@ -308,14 +308,16 @@ an alist (ACCOUNT-ELEMENT . NODE)."
            (eq 'comment (car (cdr (ledger-context-at-point))))
            (save-excursion
              (back-to-indentation)
-             (setq start (point)))
+             (setq start (point)
+                   end (line-end-position)))
            (setq collection #'ledger-comments-list))
           (;; Payees
            (eq 'transaction
                (save-excursion
                  (prog1 (ledger-thing-at-point)
                    (setq start (point)))))
-           (setq collection #'ledger-payees-list))
+           (setq end (line-end-position)
+                 collection #'ledger-payees-list))
           (;; Accounts
            (save-excursion
              (back-to-indentation)
