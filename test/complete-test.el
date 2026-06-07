@@ -237,6 +237,24 @@ payee Bar Baz
 
 2019/06/28 Foo Bar"))))
 
+(ert-deftest ledger-complete/test-complete-payee-point-inside ()
+  "Completion boundaries are correct for payees."
+  :tags '(complete regress)
+  :expected-result :failed
+  (ledger-tests-with-temp-file
+      "payee Foo Bar
+
+2019/06/28 Foo Bar"
+    (goto-char (point-max))
+    (backward-word 1)
+    (let ((inhibit-interaction t))       ;require a unique match
+      (completion-at-point))
+    (should
+     (equal (buffer-string)
+            "payee Foo Bar
+
+2019/06/28 Foo Bar"))))
+
 (ert-deftest ledger-complete/test-find-accounts-in-buffer ()
   :tags '(complete)
   (let ((ledger "*** Expenses
@@ -476,6 +494,25 @@ Regression test for https://github.com/ledger/ledger-mode/pull/455."
 2025/12/08 Grocery
     ; tra"
     (goto-char (point-max))
+    (completion-at-point)
+    (should (equal (buffer-substring (line-beginning-position) (line-end-position))
+                   "    ; transaction comment"))))
+
+
+(ert-deftest ledger-complete/complete-txn-comment-point-inside ()
+  "Completion uses correct boundaries for transaction comments."
+  :tags '(complete regress)
+  :expected-result :failed
+  (ledger-tests-with-temp-file
+      "\
+; file comment
+
+2025/12/07 Grocery
+    Expenses:Groceries  $10
+    ; transaction comment
+    Liabilities:Credit Card"
+    (search-forward "transaction comment")
+    (backward-word 1)
     (completion-at-point)
     (should (equal (buffer-substring (line-beginning-position) (line-end-position))
                    "    ; transaction comment"))))
