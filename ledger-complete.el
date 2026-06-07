@@ -169,48 +169,22 @@ Looks in `ledger-accounts-file' if set, otherwise the current buffer."
           (ledger-accounts-list-in-buffer)))
     (ledger-accounts-list-in-buffer)))
 
-(defun ledger-accounts-tree ()
-  "Return a tree of all accounts in the buffer.
+(defun ledger-complete-account-next-steps (prefix)
+  "Return a list of next steps for the account PREFIX.
 
-Each node in the tree is a list (t . CHILDREN), where CHILDREN is
-an alist (ACCOUNT-ELEMENT . NODE)."
-  (let ((account-tree (list t)))
-    (dolist (account (ledger-accounts-list) account-tree)
-      (let ((root account-tree)
-            (account-elements (split-string account ":")))
-        (dolist (element account-elements)
-          (let ((node (assoc element root)))
-            (unless node
-              (setq node (cons element (list t)))
-              (nconc root (list node)))
-            (setq root (cdr node))))))))
-
-(defun ledger-complete-account-next-steps (current)
-  "Return a list of next steps for the account prefix CURRENT."
-  (let* ((elements (and current (split-string current ":")))
-         (root (ledger-accounts-tree))
-         (prefix nil))
-    (while (cdr elements)
-      (let ((entry (assoc (car elements) root)))
-        (if entry
-            (setq prefix (concat prefix (and prefix ":")
-                                 (car elements))
-                  root (cdr entry))
-          (setq root nil elements nil)))
-      (setq elements (cdr elements)))
-    (setq root (delete (list (car elements) t) root))
-    (and root
-         (sort
-          (mapcar (function
-                   (lambda (x)
-                     (let ((term (if prefix
-                                     (concat prefix ":" (car x))
-                                   (car x))))
-                       (if (> (length (cdr x)) 1)
-                           (concat term ":")
-                         term))))
-                  (cdr root))
-          'string-lessp))))
+This returns a list of strings which begin with PREFIX and contain at
+most one additional account name step."
+  ;; Ignore final component
+  (when (string-match (rx ?: (group (+ (not ?:))) string-end) prefix)
+    (setq prefix (substring prefix 0 (match-beginning 1))))
+  (cl-flet ((one-step (account)
+              (if-let* ((index (string-search ":" account (length prefix))))
+                  (substring account 0 (+ index 1))
+                account)))
+    (seq-uniq
+     (cl-loop for account in (ledger-accounts-list)
+              when (string-prefix-p prefix account)
+              collect (one-step account)))))
 
 (defvar ledger-complete--current-time-for-testing nil
   "Internal, used for testing only.")
@@ -329,6 +303,11 @@ an alist (ACCOUNT-ELEMENT . NODE)."
                                         (line-end-position) t)
                                    (- (match-beginning 0) end)))
                  realign-after t
+                 ;; FIXME: A way to implement `ledger-complete-in-steps' that
+                 ;; would be more compatible with the programmed completion API
+                 ;; would be to have `ledger-complete-at-point' return
+                 ;; nontrivial completion `boundaries' when the customization is
+                 ;; non-nil, similar to file name completion.
                  collection (if ledger-complete-in-steps
                                 (lambda ()
                                   (ledger-complete-account-next-steps
