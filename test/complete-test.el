@@ -736,7 +736,6 @@ Covers the `user-error' branch."
 (ert-deftest ledger-complete/exact-payee-present-in-buffer ()
   "Completion may include the exact string at point if it is present elsewhere."
   :tags '(complete regress)
-  :expected-result :failed
   (ledger-tests-with-temp-file "\
 2026-01-01 Grocery Store
     Expenses:Groceries  $10
@@ -770,7 +769,6 @@ Covers the `user-error' branch."
 (ert-deftest ledger-complete/exact-account-present-in-buffer ()
   "Completion may include the exact string at point if it is present elsewhere."
   :tags '(complete regress)
-  :expected-result :failed
   (ledger-tests-with-temp-file "\
 2026-01-01 Grocery Store
     Expenses:Groceries  $10
