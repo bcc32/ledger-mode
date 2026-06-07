@@ -309,13 +309,13 @@ an alist (ACCOUNT-ELEMENT . NODE)."
            (save-excursion
              (back-to-indentation)
              (setq start (point)))
-           (setq collection (cons 'nullary #'ledger-comments-list)))
+           (setq collection #'ledger-comments-list))
           (;; Payees
            (eq 'transaction
                (save-excursion
                  (prog1 (ledger-thing-at-point)
                    (setq start (point)))))
-           (setq collection (cons 'nullary #'ledger-payees-list)))
+           (setq collection #'ledger-payees-list))
           (;; Accounts
            (save-excursion
              (back-to-indentation)
@@ -327,28 +327,25 @@ an alist (ACCOUNT-ELEMENT . NODE)."
                                         (line-end-position) t)
                                    (- (match-beginning 0) end)))
                  realign-after t
-                 collection (cons 'nullary
-                                  (if ledger-complete-in-steps
-                                      (lambda ()
-                                        (ledger-complete-account-next-steps start end))
-                                    #'ledger-accounts-list)))))
+                 collection (if ledger-complete-in-steps
+                                (lambda ()
+                                  (ledger-complete-account-next-steps start end))
+                              #'ledger-accounts-list))))
     (when collection
       (let ((prefix (buffer-substring-no-properties start end)))
         (list start end
-              (pcase collection
-                ;; `func-arity' isn't available until Emacs 26, so we have to
-                ;; manually track the arity of the functions.
-                (`(nullary . ,f)
-                 ;; a nullary function that returns a completion collection
-                 (completion-table-with-cache
-                  (lambda (_)
-                    (cl-remove-if (apply-partially 'string= prefix) (funcall f)))))
-                ((pred functionp)
-                 ;; a completion table
-                 collection)
-                (_
-                 ;; a static completion collection
-                 collection))
+              (cond
+               ((not (functionp collection))
+                ;; a static completion collection
+                collection)
+               ((equal '(0 . 0) (func-arity collection))
+                ;; a nullary function that returns a completion collection
+                (completion-table-with-cache
+                 (lambda (_)
+                   (cl-remove-if (apply-partially 'string= prefix) (funcall collection)))))
+               (t
+                ;; a programmed completion table
+                collection))
               :exit-function (lambda (&rest _)
                                (when delete-suffix
                                  (delete-char delete-suffix))
