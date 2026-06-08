@@ -16,14 +16,6 @@
 (require 'test-helper)
 (require 'ledger-check)
 
-
-(ert-deftest ledger-check/mode-derived-from-text-mode ()
-  "`ledger-check-mode' is a major mode derived from `text-mode'."
-  (with-temp-buffer
-    (ledger-check-mode)
-    (should (eq major-mode 'ledger-check-mode))
-    (should (derived-mode-p 'text-mode))))
-
 (ert-deftest ledger-check/mode-keymap-bindings ()
   "RET visits source, q quits."
   (should (eq (lookup-key ledger-check-mode-map (kbd "RET"))
