@@ -425,6 +425,12 @@
 (defconst ledger-directive-start-regex
   "[=~;#%|\\*[A-Za-z]")
 
+(defconst ledger-error-regex
+  (rx line-start "While parsing file \"" (one-or-more (not whitespace))
+      " line " (group (one-or-more num)) ":\n" ; line number, subexp 1
+      (zero-or-more line-start "While " (one-or-more not-newline) "\n" )
+      (minimal-match (zero-or-more line-start (zero-or-more not-newline) "\n"))
+      (group "Error: " (one-or-more not-newline) "\n"))) ; message, subexp 2
 
 (provide 'ledger-regex)
 
