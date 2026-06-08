@@ -28,6 +28,7 @@
 
 (require 'easymenu)
 (require 'ledger-navigate)
+(require 'ledger-regex)
 (require 'ledger-report) ; for ledger-master-file
 
 
@@ -76,7 +77,7 @@
   ;; format check report to make it navigate the file
 
   (goto-char (point-min))
-  (while (re-search-forward "^.*: \"\\(.*\\)\", line \\([0-9]+\\)" nil t)
+  (while (re-search-forward ledger-error-or-warning-regex nil t)
     (let* ((file (match-string 1))
            (line (string-to-number (match-string 2)))
            (source-marker

@@ -101,10 +101,10 @@ Flymake calls this with REPORT-FN as needed."
                       ;; of objects, and call `report-fn'.
                       (cl-loop
                        while (search-forward-regexp ledger-error-regex nil t)
-                       for msg = (match-string 2)
+                       for msg = (match-string 3)
                        for region = (flymake-diag-region
                                      source
-                                     (string-to-number (match-string 1)))
+                                     (string-to-number (match-string 2)))
                        when region
                        collect (flymake-make-diagnostic source
                                                         (car region)
