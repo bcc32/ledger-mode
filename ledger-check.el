@@ -81,7 +81,9 @@
 
     (goto-char (point-min))
     (while (re-search-forward ledger-error-or-warning-regex nil t)
-      (let* ((line (string-to-number (match-string 2)))
+      (let* ((beg (match-beginning 0))
+             (end (match-end 0))
+             (line (string-to-number (match-string 2)))
              (source-marker
               (with-current-buffer ledger-check--source-buffer
                 (save-excursion
@@ -89,7 +91,7 @@
                     (widen)
                     (ledger-navigate-to-line line)
                     (point-marker))))))
-        (set-text-properties (line-beginning-position) (line-end-position)
+        (set-text-properties beg end
                              (list 'ledger-source source-marker
                                    'face 'ledger-font-report-clickable-face))
         (end-of-line)))
