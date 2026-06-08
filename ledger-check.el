@@ -102,8 +102,9 @@
   (let ((rbuf (get-buffer ledger-check-buffer-name)))
     (unless rbuf
       (user-error "There is no ledger check buffer"))
-    (pop-to-buffer rbuf)
-    (shrink-window-if-larger-than-buffer)))
+    (pop-to-buffer rbuf
+                   '(display-buffer-below-selected
+                     (window-height . shrink-window-if-larger-than-buffer)))))
 
 (defun ledger-check-quit ()
   "Quit the ledger check buffer."
@@ -133,13 +134,14 @@ prompt to save if the current buffer is modified."
         (wcfg (current-window-configuration)))
     (if cbuf
         (kill-buffer cbuf))
-    (with-current-buffer
-        (pop-to-buffer (get-buffer-create ledger-check-buffer-name))
+    (with-current-buffer (get-buffer-create ledger-check-buffer-name)
       (ledger-check-mode)
       (setq ledger-check--source-buffer source-buffer
             ledger-check--original-window-configuration wcfg)
       (ledger-do-check)
-      (shrink-window-if-larger-than-buffer)
+      (pop-to-buffer (current-buffer)
+                     '(display-buffer-below-selected
+                       (window-height . shrink-window-if-larger-than-buffer)))
       (set-buffer-modified-p nil)
       (setq buffer-read-only t)
       (message "q to quit; r to redo; k to kill"))))
