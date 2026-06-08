@@ -48,13 +48,10 @@
 
 (ert-deftest ledger-check/do-check-no-errors ()
   "`ledger-do-check' inserts a 'no warnings' note when ledger reports nothing."
-  (cl-letf (((symbol-function 'shell-command)
-             ;; Simulate ledger producing no output (empty input → empty out).
-             (lambda (_cmd &rest _) nil)))
-    (with-temp-buffer
-      (ledger-do-check)
-      (should (string-match-p "No errors or warnings reported."
-                              (buffer-string))))))
+  (with-temp-buffer
+    (ledger-do-check)
+    (should (string-match-p "No errors or warnings reported."
+                            (buffer-string)))))
 
 (ert-deftest ledger-check/do-check-parses-error-line ()
   "An error line is decorated with `ledger-source' text properties."
