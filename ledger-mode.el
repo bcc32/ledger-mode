@@ -5,7 +5,7 @@
 ;; This file is not part of GNU Emacs.
 
 ;; Version: 4.1.0
-;; Package-Requires: ((emacs "26.1"))
+;; Package-Requires: ((emacs "26.1") (compat "28.1"))
 ;; URL: https://github.com/ledger/ledger-mode
 
 ;; This is free software; you can redistribute it and/or modify it under
@@ -32,6 +32,7 @@
 
 ;;; Code:
 
+(require 'compat)
 (require 'ledger-regex)
 (require 'org)
 (require 'ledger-commodities)
@@ -111,22 +112,15 @@ This uses `org-read-date', which see."
   (ledger-format-date (let ((org-read-date-prefer-future nil))
                         (org-read-date nil t nil prompt))))
 
-(defun ledger-get-minibuffer-prompt (prompt default)
-  "Return a minibuffer prompt string composing PROMPT and DEFAULT."
-  (concat prompt
-          (if default
-              (concat " (" default "): ")
-            ": ")))
-
 (defun ledger-completing-read-with-default (prompt default collection)
   "Return a user-supplied string after PROMPT.
 Use the given DEFAULT, while providing completions from COLLECTION."
-  (completing-read (ledger-get-minibuffer-prompt prompt default)
+  (completing-read (format-prompt prompt default)
                    collection nil nil nil 'ledger-minibuffer-history default))
 
 (defun ledger-read-string-with-default (prompt default)
   "Return user supplied string after PROMPT, or DEFAULT."
-  (read-string (ledger-get-minibuffer-prompt prompt default)
+  (read-string (format-prompt prompt default)
                nil 'ledger-minibuffer-history default))
 
 (defun ledger-display-balance-at-point (&optional arg)

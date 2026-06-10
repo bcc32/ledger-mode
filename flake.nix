@@ -42,6 +42,7 @@
             package-lint
             elisp-autofmt
             undercover
+            compat
           ]
         );
 

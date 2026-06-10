@@ -21,6 +21,9 @@ packages in [MELPA][melpa] or [MELPA Stable][melpa-stable], you'll need to
 add the directory containing `ledger-mode.el` to your `load-path`, and
 then `(require 'ledger-mode)`.
 
+You will also need to have the `compat` package installed, at version 28.1 or
+newer.
+
 Configuring completion
 ======================
 

@@ -18,6 +18,10 @@
 
 ;;; Code:
 
+;; Required for `package-lint' to find installed `compat' package and not warn
+;; about the dependency.
+(package-activate-all)
+
 (require 'package-lint nil t)
 (require 'checkdoc)
 
