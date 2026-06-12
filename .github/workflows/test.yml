@@ -45,10 +45,13 @@ jobs:
     - uses: purcell/setup-emacs@master
       with:
         version: ${{ matrix.emacs_version }}
+    - name: Install compat
+      run: emacs --batch -f package-initialize -f package-refresh-contents --eval "(package-install 'compat)"
 
     - uses: actions/checkout@v6
     - name: Byte compilation
-      run: emacs --eval "(setq byte-compile-error-on-warn t)" -L . --batch -f batch-byte-compile ./*.el
+      # package-activate-all is not available until Emacs 27
+      run: emacs --eval "(setq byte-compile-error-on-warn t)" -L . --batch -f package-initialize -f batch-byte-compile ./*.el
     - name: Tests
       run: nix shell ${{ matrix.ledger_version || 'nixpkgs#ledger' }} --print-build-logs -c make -C test
     # This is currently for information only, since a lot of docstrings need fixing up

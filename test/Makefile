@@ -1,5 +1,6 @@
 EMACS ?= emacs
-EMACS_FLAGS = --quick --directory . --directory ..
+# package-activate-all is not available until Emacs 27
+EMACS_FLAGS = --quick --directory . --directory .. -f package-initialize
 EMACS_BATCH = "$(EMACS)" --batch $(EMACS_FLAGS)
 EMACS_INTERACTIVE = "$(EMACS)" $(EMACS_FLAGS)
 
